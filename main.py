@@ -1,23 +1,31 @@
+from seleniumwire import webdriver  # Import from seleniumwire
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
-
+import random
+import string
 
 use_proxy = False  # Set to True to use proxy, False to use your host IP
 
 if use_proxy:
-    from seleniumwire import webdriver
     import getProxy
-else:
-    from selenium import webdriver
+
+# Function to generate a random X-User-Id
+def generate_random_user_id(length=32):
+    letters_and_digits = string.ascii_lowercase + string.digits
+    return ''.join(random.choice(letters_and_digits) for i in range(length))
 
 url = "https://pimeyes.com/en"
 
 def upload(url, path, use_proxy):
     driver = None
 
+    # Generate a random X-User-Id
+    user_id = generate_random_user_id()
+
+    options = {}
     if use_proxy:
         prox = getProxy.fetchsocks5()  # FORMAT = USERNAME:PASS@IP:PORT
         options = {
@@ -27,11 +35,13 @@ def upload(url, path, use_proxy):
                 'no_proxy': 'localhost,127.0.0.1'
             }
         }
-        driver = webdriver.Chrome(seleniumwire_options=options)
-    else:
-        chrome_options = Options()
-        # chrome_options.add_argument('--headless')  # Uncomment to run Chrome in headless mode (no GUI)
-        driver = webdriver.Chrome(options=chrome_options)
+
+    # Add custom headers
+    options['custom_headers'] = {
+        'X-User-Id': user_id
+    }
+
+    driver = webdriver.Chrome(seleniumwire_options=options)
     
     results = None
     currenturl = None 
@@ -82,3 +92,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
